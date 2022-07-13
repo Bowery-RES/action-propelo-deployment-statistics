@@ -12,3 +12,21 @@ Action to send service deployment/release statistics
 
 # IMPORTANT
 The Action must be used after the Github Release publishing and from the **commit** with the **release tag**!
+
+# Usage
+```
+jobs:
+  propelo:
+    runs-on: ubuntu-latest
+    name: Submit deployment statistic to propelo
+    steps:
+      - uses: actions/action-propelo-deployment-statistics@v1
+        with:
+          github_repository: ${{ env.GITHUB_REPOSITORY }}
+          commit_sha: ${{ env.GITHUB_SHA }}
+          environment: 'production' # Or some internal env variable
+          github_user: ${{ secrets.GITHUB_USER }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          propelo_token: ${{ secrets.PROPELO_TOKEN }}
+          propelo_deployment_instance_guid: ${{ secrets.PROPELO_GUID}}
+```
