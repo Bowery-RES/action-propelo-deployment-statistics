@@ -1,0 +1,51 @@
+name: 'Deployment statistics for Propelo'
+description: 'Prepare and submit deployment/release statistics to Propelo (levelops.io)'
+inputs:
+  github_repository:
+    description: 'Github Repository'
+    required: true
+  commit_sha:
+    description: 'Commit SHA'
+    required: true
+  environment:
+    description: 'Deployment environment'
+    required: true
+  github_user:
+    description: 'Github user'
+    required: true
+  github_token:
+    description: 'Github Token'
+    required: true
+  propelo_token:
+    description: 'Propelo Token'
+    required: true
+  propelo_deployment_instance_guid:
+    description: 'Propelo jenkins_instance_guid predefined variable'
+    required: true
+
+branding:
+  icon: 'trending-up'  
+  color: 'blue'
+
+runs:
+  using: "composite"
+  steps:
+    - name: setup python
+      uses: actions/setup-python@v4
+      id: setup
+      with:
+        python-version: 3.8
+        cache: 'pip'
+    - name: install requirements
+      run: pip install -r requirements.txt
+    - name: execute python script
+      run: |
+        ${{ steps.setup.outputs.python-path }} propelo.py
+      env:
+        GITHUB_REPOSITORY: ${{ inputs.github_repository }}
+        COMMIT_SHA: ${{ inputs.commit_sha }}
+        ENVIRONMENT: ${{ inputs.environment }}
+        GITHUB_USER: ${{ inputs.github_user }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        PROPELO_TOKEN: ${{ inputs.propelo_token }}
+        PROPELO_GUID: ${{ inputs.propelo_deployment_instance_guid }}
