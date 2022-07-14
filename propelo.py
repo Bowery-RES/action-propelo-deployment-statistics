@@ -101,26 +101,27 @@ try:
     for i in dataJSON:
         if i['prerelease']== False and i['draft']== False:
             tagsNames.append(i['tag_name'])
-            if len(tagsNames) <= 1:
+            if len(tagsNames) == 1:
                 print(f'\nLatest released Release TAG:\t{i["tag_name"]}')
                 releaseName = i['tag_name']
                 print(f'Latest released Release ID:\t{i["id"]}')
                 releaseID = i['id']
                 print(f'Latest released Release Author:\t{i["author"]["login"]}')
                 releaseAuthor = i['author']['login']
-                print(f'Latest released Release Time:\t{i["created_at"]}')
-                releaseTime = i['created_at']
+                print(f'Latest released Release Time:\t{i["published_at"]}')
+                releaseTime = i['published_at']
                 releaseURL = i['html_url']
-        data.append([i['name'], i['created_at'], i['id'], i['tag_name'], i['prerelease'], i['draft'], i['target_commitish']])
+        data.append([i['name'], i['published_at'], i['id'], i['tag_name'], i['prerelease'], i['draft'], i['target_commitish']])
     print(tabulate(data, headers='firstrow', tablefmt='fancy_grid'))
 except json.decoder.JSONDecodeError:
     print("Response [githubAPIGetLastCommitResponse] could not be converted to JSON")
     sys.exit(0)
 
+data.clear()
+
 if len(tagsNames) < 2:
     print("Looks like this is the FIRST release.")
     sys.exit(0)
-
 
 # Get 20 latest tags
 tags = {}
@@ -148,6 +149,7 @@ while True:
         releasesDiffsJSON = json.loads(githubJSON)
         for i in releasesDiffsJSON["commits"]:
             diffCommits.append(i["sha"])
+            data.append([i["sha"], i["commit"]["committer"]["name"], i["commit"]["committer"]["date"]]) #, i["sha"], i["commit"]["message"], i["commit"]["committer"]["date"]
     except json.decoder.JSONDecodeError:
         print("Response (releases diff commits) could not be converted to JSON")
         sys.exit(0)
@@ -155,8 +157,7 @@ while True:
         break
     nextPage = githubAPIGetResponse['links']['next']
 
-print(f'\nRelease commits count:\t{len(diffCommits)}')
-
+# Prepare payload JSON
 propeloJSON = {}
 propeloJSON["name"]       = f'{releaseName}'
 propeloJSON["sha"]        = commitSHA
@@ -166,6 +167,8 @@ propeloJSON["date"]       = releaseTime
 propeloJSON["number"]     = releaseID
 propeloJSON["url"]        = releaseURL
 print(f'\nParalelo parameters:\ncommit_sha:\t{propeloJSON["sha"]}\nName:\t{propeloJSON["name"]}\nDate:\t{propeloJSON["date"]}\nUser:\t{propeloJSON["user"]}\nURL:\t{propeloJSON["url"]}\nNumber:\t{propeloJSON["number"]}')
+print(f'\nRelease commits count:\t{len(diffCommits)}')
+print(tabulate(data, tablefmt='fancy_grid'))
 
 try:
     propeloReleaseDate = propeloJSON["date"]
@@ -177,14 +180,12 @@ except KeyError:
 if propeloReleaseDate.find('Z') > 0:
     propeloReleaseDate = propeloReleaseDate.rstrip('Z')
 
-
-
 propeloJSON["date"] = format(datetime.timestamp(datetime.fromisoformat(propeloReleaseDate))*1000, '.0f')
 propeloJSON["duration"] = format((datetime.timestamp(datetime.now()) - datetime.timestamp(datetime.fromisoformat(propeloReleaseDate)))*1000, '.0f')
 print(f"\nPrepared JSON's data:\n--->\n{propeloJSON}\n<---")
 
 toPropeloPayload = {}
-toPropeloPayload["job_name"]                 = propeloJSON["name"]
+toPropeloPayload["job_name"]                 = appName[1] + '-release' #appName[1] + '-release'; propeloJSON["name"]
 toPropeloPayload["user_id"]                  = propeloJSON["user"]
 toPropeloPayload["job_run_params"]           = [
     {"type": "StringParameterValue",  "name": "PRODUCT_NAME",           "value": f'{appName[1]}'},
@@ -225,7 +226,7 @@ except json.decoder.JSONDecodeError:
     sys.exit(0)
 
 
-print(f'\nPOST statistics to Propelo:\n{json.dumps(toPropeloJSON)}')
+print(f'\nPOST statistics to Propelo ...') # {json.dumps(toPropeloJSON)}
 propeloRequestHeaders = {'Authorization' : f'Apikey {propeloToken}', 'Content-Type': 'application/json'}
 try:
     propeloAPIResponse = requests.post(propeloPostURL, data=toPropeloData, headers=propeloRequestHeaders, timeout=10)
@@ -242,3 +243,4 @@ except requests.exceptions.Timeout as timeoutError:
 except requests.exceptions.RequestException as requestExceptionError:
     print("Oops: Something Else", requestExceptionError)
     sys.exit(0)
+print(f'Done!')

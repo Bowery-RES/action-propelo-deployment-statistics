@@ -25,8 +25,8 @@ jobs:
           github_repository: ${{ env.GITHUB_REPOSITORY }}
           commit_sha: ${{ env.GITHUB_SHA }}
           environment: 'production' # Or some internal env variable
-          github_user: ${{ secrets.GITHUB_USER }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_user: ${{ secrets.GH_USER }}
+          github_token: ${{ secrets.GH_TOKEN }} # PAT:https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
           propelo_token: ${{ secrets.PROPELO_TOKEN }}
           propelo_deployment_instance_guid: ${{ secrets.PROPELO_GUID}}
 ```
