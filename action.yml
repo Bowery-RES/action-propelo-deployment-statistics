@@ -28,17 +28,16 @@ branding:
   color: 'blue'
 
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
-    - name: setup python
-      uses: actions/setup-python@v4
-      id: setup
+    - uses: actions/setup-python@v4
+      id: setup_python
       with:
         python-version: 3.8
         cache: 'pip'
-    - name: install requirements
+    - id: install_requirements
       run: pip install -r requirements.txt
-    - name: execute python script
+    - id: execute_python_script
       run: |
         ${{ steps.setup.outputs.python-path }} propelo.py
       env:
