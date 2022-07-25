@@ -30,12 +30,6 @@ branding:
 runs:
   using: 'composite'
   steps:
-    - uses: actions/setup-python@v4
-      id: setup_python
-      with:
-        python-version: 3.8
-        cache: 'pip'
-    
     - id: debug
       shell: bash
       run: |
@@ -45,6 +39,12 @@ runs:
         echo ls GITHUB_ACTION_PATH $(ls -alh $GITHUB_ACTION_PATH)
         echo reqierements file $(ls -alh $GITHUB_ACTION_PATH/requirements.txt)
         echo output of GITHUB_ACTION_PATH/requirements.txt $(cat $GITHUB_ACTION_PATH/requirements.txt)
+
+    - uses: actions/setup-python@v4
+      id: setup_python
+      with:
+        python-version: 3.8
+        cache: 'pip'
 
     - id: install_requirements
       shell: bash
