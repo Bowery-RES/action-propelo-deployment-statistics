@@ -39,11 +39,11 @@ runs:
         cache: 'pip'
     - id: install_requirements
       shell: bash
-      run: pip install -r requirements.txt
+      run: pip install -r $GITHUB_ACTION_PATH/requirements.txt
     - id: execute_python_script
       shell: bash
       run: |
-        ${{ steps.setup.outputs.python-path }} propelo.py
+        ${{ steps.setup.outputs.python-path }} $GITHUB_ACTION_PATH/propelo.py
       env:
         GITHUB_REPOSITORY: ${{ inputs.github_repository }}
         COMMIT_SHA: ${{ inputs.commit_sha }}
