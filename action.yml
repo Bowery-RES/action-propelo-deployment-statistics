@@ -36,8 +36,10 @@ runs:
         python-version: 3.8
         cache: 'pip'
     - id: install_requirements
+      shell: bash
       run: pip install -r requirements.txt
     - id: execute_python_script
+      shell: bash
       run: |
         ${{ steps.setup.outputs.python-path }} propelo.py
       env:
