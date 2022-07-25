@@ -45,6 +45,7 @@ runs:
     #   with:
     #     python-version: 3.8
     #     cache: 'pip'
+    # ! ${{ steps.setup.outputs.python-path }}
 
     - id: install_requirements
       shell: bash
@@ -53,7 +54,7 @@ runs:
     - id: execute_python_script
       shell: bash
       run: |
-        ${{ steps.setup.outputs.python-path }} $GITHUB_ACTION_PATH/propelo.py
+          python3 $GITHUB_ACTION_PATH/propelo.py
       env:
         GITHUB_REPOSITORY: ${{ inputs.github_repository }}
         COMMIT_SHA: ${{ inputs.commit_sha }}
