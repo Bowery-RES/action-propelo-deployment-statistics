@@ -39,6 +39,13 @@ except KeyError:
     sys.exit(0)
 
 try:
+    releaseTAG = os.environ['RELEASE_TAG']
+    data.append(["RELEASE_TAG", releaseTAG])
+except KeyError:
+    print("Please define the environment variable 'RELEASE_TAG'")
+    sys.exit(0)
+
+try:
     appEnv = os.environ['ENVIRONMENT']
     data.append(["ENVIRONMENT", appEnv])
     if appEnv != 'production':
@@ -64,21 +71,21 @@ except KeyError:
 
 try:
     githubToken = os.environ['GITHUB_TOKEN']
-    data.append(["GITHUB_TOKEN", "*****"])
+    data.append(["GITHUB_TOKEN", "***"])
 except KeyError:
     print("Please define the environment variable 'GITHUB_TOKEN'")
     sys.exit(0)
 
 try:
     propeloToken = os.environ['PROPELO_TOKEN']
-    data.append(["PROPELO_TOKEN", "*****"])
+    data.append(["PROPELO_TOKEN", "***"])
 except KeyError:
     print("Please define the environment variable 'PROPELO_TOKEN'")
     sys.exit(0)
 
 try:
     propeloGUID = os.environ['PROPELO_GUID']
-    data.append(["PROPELO_GUID", "*****"])
+    data.append(["PROPELO_GUID", "***"])
 except KeyError:
     print("Please define the environment variable 'PROPELO_GUID'")
     sys.exit(0)
@@ -94,7 +101,7 @@ propeloPostURL = 'https://api.levelops.io/v1/generic-requests'
 
 # Get latest Releases
 tagsNames = []
-githubJSON = api_request(githubAPIGetCommitRequest + '/releases?per_page=10', f'GET latest Release', githubUser, githubToken, timeout=10)
+githubJSON = api_request(githubAPIGetCommitRequest + '/releases?per_page=10', f'GET latest Releases', githubUser, githubToken, timeout=10)
 try:
     dataJSON = json.loads(githubJSON['content'])
     data.append(["Release", "Date", "ID", "Tag Name", "Prerelease", "Draft", "Target branch"])
@@ -111,7 +118,11 @@ try:
                 print(f'Latest released Release Time:\t{i["published_at"]}')
                 releaseTime = i['published_at']
                 releaseURL = i['html_url']
+                if releaseName != releaseTAG:
+                    print(f"Latest Github Release '{releaseName}' is not equal current Release '{releaseTAG}'")
+                    sys.exit(0)
         data.append([i['name'], i['published_at'], i['id'], i['tag_name'], i['prerelease'], i['draft'], i['target_commitish']])
+    print("\n* Releases:")
     print(tabulate(data, headers='firstrow', tablefmt='fancy_grid'))
 except json.decoder.JSONDecodeError:
     print("Response [githubAPIGetLastCommitResponse] could not be converted to JSON")
@@ -159,15 +170,18 @@ while True:
 
 # Prepare payload JSON
 propeloJSON = {}
-propeloJSON["name"]       = f'{releaseName}'
+propeloJSON["name"]       = appName[1]
 propeloJSON["sha"]        = commitSHA
-propeloJSON["fullName"]   = f'{releaseName}'
+propeloJSON["fullName"]   = f'{appName[1]} Release {releaseName}'
 propeloJSON["user"]       = releaseAuthor
 propeloJSON["date"]       = releaseTime
 propeloJSON["number"]     = releaseID
 propeloJSON["url"]        = releaseURL
-print(f'\nParalelo parameters:\ncommit_sha:\t{propeloJSON["sha"]}\nName:\t{propeloJSON["name"]}\nDate:\t{propeloJSON["date"]}\nUser:\t{propeloJSON["user"]}\nURL:\t{propeloJSON["url"]}\nNumber:\t{propeloJSON["number"]}')
-print(f'\nRelease commits count:\t{len(diffCommits)}')
+print(f'\n* Release commits count:\t{len(diffCommits)}')
+print(tabulate(data, tablefmt='fancy_grid'))
+data.clear()
+print("\n* Paralelo parameters:")
+data = ['COMMIT_SHA', propeloJSON["sha"]], ['Name', propeloJSON["name"]], ['Date', propeloJSON["date"]], ['User', propeloJSON["user"]], ['URL', propeloJSON["url"]], ['Number', propeloJSON["number"]]
 print(tabulate(data, tablefmt='fancy_grid'))
 
 try:
@@ -185,7 +199,7 @@ propeloJSON["duration"] = format((datetime.timestamp(datetime.now()) - datetime.
 print(f"\nPrepared JSON's data:\n--->\n{propeloJSON}\n<---")
 
 toPropeloPayload = {}
-toPropeloPayload["job_name"]                 = appName[1] + '-release' #appName[1] + '-release'; propeloJSON["name"]
+toPropeloPayload["job_name"]                 = appName[1] + '-release'  #appName[1] + '-release'; propeloJSON["name"]
 toPropeloPayload["user_id"]                  = propeloJSON["user"]
 toPropeloPayload["job_run_params"]           = [
     {"type": "StringParameterValue",  "name": "PRODUCT_NAME",           "value": f'{appName[1]}'},
