@@ -7,6 +7,9 @@ inputs:
   commit_sha:
     description: 'Commit SHA'
     required: true
+  release_tag:
+    description: 'Release TAG'
+    required: true
   environment:
     description: 'Deployment environment'
     required: true
@@ -58,6 +61,7 @@ runs:
       env:
         GITHUB_REPOSITORY: ${{ inputs.github_repository }}
         COMMIT_SHA: ${{ inputs.commit_sha }}
+        RELEASE_TAG: ${{ inputs.release_tag }}
         ENVIRONMENT: ${{ inputs.environment }}
         GITHUB_USER: ${{ inputs.github_user }}
         GITHUB_TOKEN: ${{ inputs.github_token }}
