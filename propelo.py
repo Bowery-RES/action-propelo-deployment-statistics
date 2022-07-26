@@ -119,7 +119,7 @@ try:
                 releaseTime = i['published_at']
                 releaseURL = i['html_url']
                 if releaseName != releaseTAG:
-                    print(f"Latest Github Release '{releaseName}' is not equal current Release '{releaseTAG}'")
+                    print(f"Latest Github Release '{releaseName}' is not equal current Actions Release '{releaseTAG}'")
                     sys.exit(0)
         data.append([i['name'], i['published_at'], i['id'], i['tag_name'], i['prerelease'], i['draft'], i['target_commitish']])
     print("\n* Releases:")
@@ -172,15 +172,15 @@ while True:
 propeloJSON = {}
 propeloJSON["name"]       = appName[1]
 propeloJSON["sha"]        = commitSHA
-propeloJSON["fullName"]   = f'{appName[1]} Release {releaseName}'
+propeloJSON["fullName"]   = appName[1]
 propeloJSON["user"]       = releaseAuthor
 propeloJSON["date"]       = releaseTime
 propeloJSON["number"]     = releaseID
 propeloJSON["url"]        = releaseURL
 print(f'\n* Release commits count:\t{len(diffCommits)}')
 print(tabulate(data, tablefmt='fancy_grid'))
-data.clear()
 print("\n* Paralelo parameters:")
+# data.clear()
 data = ['COMMIT_SHA', propeloJSON["sha"]], ['Name', propeloJSON["name"]], ['Date', propeloJSON["date"]], ['User', propeloJSON["user"]], ['URL', propeloJSON["url"]], ['Number', propeloJSON["number"]]
 print(tabulate(data, tablefmt='fancy_grid'))
 
@@ -199,7 +199,7 @@ propeloJSON["duration"] = format((datetime.timestamp(datetime.now()) - datetime.
 print(f"\nPrepared JSON's data:\n--->\n{propeloJSON}\n<---")
 
 toPropeloPayload = {}
-toPropeloPayload["job_name"]                 = appName[1] + '-release'  #appName[1] + '-release'; propeloJSON["name"]
+toPropeloPayload["job_name"]                 = appName[1]               #appName[1] + '-release'; propeloJSON["name"]
 toPropeloPayload["user_id"]                  = propeloJSON["user"]
 toPropeloPayload["job_run_params"]           = [
     {"type": "StringParameterValue",  "name": "PRODUCT_NAME",           "value": f'{appName[1]}'},
